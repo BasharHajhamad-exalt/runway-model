@@ -22,45 +22,24 @@
 
 import random
 from PIL import Image
-import dlib
-import face_recognition
-import numpy as np
 
-
-
-def get_bounding_box(face, h, w):
-    top, right, bottom, left = face
-    z = [float(left)/w, float(top)/h, float(right)/w, float(bottom)/h]
-    print(z)
-    return z
-
-class FaceTracker():
+class ExampleModel():
 
     def __init__(self, options):
-        self.known_faces = {}
-        self.index = 0
+        random.seed(options['seed'])
+        self.truncation = options['truncation']
 
     # Generate an image based on some text.
-    def process(self, input):
+    def run_on_input(self, caption_text):
 
-        img = np.array(input)
-        h, w = img.shape[0:2]
-        print("HW;,", h,w)
-        face_locations = face_recognition.face_locations(img)
-        face_encodings = face_recognition.face_encodings(img, face_locations)
+        # This is an example of how you could use some input from
+        # @runway.setup(), like options['truncation'], later inside a
+        # function called by @runway.command().
+        text = caption_text[0:self.truncation]
 
-        faces = []
-        for face_encoding, face_location in zip(face_encodings, face_locations):
-            matches = face_recognition.compare_faces([self.known_faces[f]["encoding"] for f in self.known_faces], face_encoding)
-            if True not in matches:
-                self.known_faces[self.index] = {"index": self.index, "encoding": face_encoding}
-                match_index = self.index
-                self.index += 1
-            else:
-                match_index = matches.index(True)
-            
-            print("look for", face_location)
-            faces.append({"index": match_index, "location": get_bounding_box(face_location, h, w)})
-
-        return faces
-        
+        # Return a red image if the input text is "red",
+        # otherwise return a blue image.
+        if text == 'red':
+            return Image.new('RGB', (512, 512), color = 'red')
+        else:
+            return Image.new('RGB', (512, 512), color = 'blue')

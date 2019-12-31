@@ -37,9 +37,8 @@
 # Import the Runway SDK. Please install it first with
 # `pip install runway-python`.
 import runway
-from runway.data_types import number, text, image, array, image_bounding_box
-from example_model import FaceTracker
-from PIL import Image
+from runway.data_types import number, text, image
+from example_model import ExampleModel
 
 # Setup the model, initialize weights, set the configs of the model, etc.
 # Every model will have a different set of configurations and requirements.
@@ -54,28 +53,28 @@ setup_options = {
 def setup(opts):
     msg = '[SETUP] Ran with options: seed = {}, truncation = {}'
     print(msg.format(opts['seed'], opts['truncation']))
-    model = FaceTracker(opts)
+    model = ExampleModel(opts)
     return model
-
 
 # Every model needs to have at least one command. Every command allows to send
 # inputs and process outputs. To see a complete list of supported inputs and
 # outputs data types: https://sdk.runwayml.com/en/latest/data_types.html
 @runway.command(name='generate',
-                inputs={ 'input': image() },
-                outputs={ 'ids': array(item_type=number), 'boxes': array(image_bounding_box) },
-                description='Sends face ids found.')
+                inputs={ 'caption': text() },
+                outputs={ 'image': image(width=512, height=512) },
+                description='Generates a red square when the input text input is "red".')
 def generate(model, args):
-    faces = model.process(args['input'])
+    print('[GENERATE] Ran with caption value "{}"'.format(args['caption']))
+    # Generate a PIL or Numpy image based on the input caption, and return it
+    output_image = model.run_on_input(args['caption'])
     return {
-        'ids': [f["index"] for f in faces],
-        'boxes': [f["location"] for f in faces  ]
+        'image': output_image
     }
 
 if __name__ == '__main__':
     # run the model server using the default network interface and ports,
     # displayed here for convenience
-    runway.run(host='0.0.0.0', port=8000, debug=True)
+    runway.run(host='0.0.0.0', port=8000)
 
 ## Now that the model is running, open a new terminal and give it a command to
 ## generate an image. It will respond with a base64 encoded URI
